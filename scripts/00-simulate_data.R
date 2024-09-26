@@ -1,19 +1,21 @@
 #### Preamble ####
 # Purpose: Simulates Data
 # Author: Heyucheng Zhang
-# Date: 19 September 2024
+# Date: 26 September 2024
 # Contact: heyucheng.zhang@mail.utoronto.ca
 # License: None
 # Pre-requisites: None
-
+# Other Information: Code is appropriately styled using styler
 
 #### Workspace setup ####
-#install.packages("opendatatoronto")
-#install.packages("knitr")
-#install.packages("tidyverse")
+# install.packages("opendatatoronto")
+# install.packages("knitr")
+# install.packages("tidyverse")
+# install.packages("styler")
 library(knitr)
 library(opendatatoronto)
 library(tidyverse)
+library(styler)
 
 #### Simulate data ####
 
@@ -31,7 +33,7 @@ area_names <- paste("Neighbourhood", 1:number_of_neighbourhoods)
 
 # Simulate data
 simulated_data <- tibble(
-  X_id = 1:number_of_neighbourhoods,
+  HOOD_ID = 1:number_of_neighbourhoods,
   AREA_NAME = area_names,
   ASSAULT_2014 = sample(0:500, number_of_neighbourhoods, replace = TRUE),
   ASSAULT_2015 = sample(0:500, number_of_neighbourhoods, replace = TRUE),
@@ -127,6 +129,3 @@ simulated_data <- tibble(
 
 # Display the head of the simulated data
 head(simulated_data)
-
-
-
