@@ -1,0 +1,197 @@
+---
+title: "Mapping Crime Hotspots in Toronto: A Decade of Homicides and Auto Thefts Uncover High-Risk Neighborhoods"
+author: "Heyucheng Zhang"
+thanks: "Code and data are available at: https://github.com/heyuchengzhang/Toronto-Neighbourhood-Crime"
+date: 26 September 2024
+date-format: long
+abstract: "This paper analyzes crime data from Toronto neighborhoods over a ten-year period, focusing on homicides and auto thefts to identify areas most affected by these crimes. The findings show significant disparities, with certain neighborhoods, such as West Humber-Clairville, experiencing notably higher rates of auto thefts, while others, like Moss Park, show spikes in homicides. These results demonstrate the necessity of focused interventions in high-crime neighborhoods to improve resource allocation to prevent crime. Recognizing these crime patterns is needed to enhance public safety and tackle the fundamental causes of urban crime."
+format: pdf
+toc: true
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| message: false
+#| echo: false
+#| warning: false
+#### Workspace set up ####
+# install.packages("tidyverse")
+# install.packages("knitr")
+# install.packages("here")
+# install.packages("janitor")
+# install.packages("kableExtra")
+
+library(tidyverse) # data-related packages
+library(knitr) # make tables
+library(here) # manage file paths
+library(janitor) # clean data
+library(kableExtra) # table-related packages
+
+#### Read in cleaned data ####
+
+cleaned_data <- read_csv(file = here("data/analysis_data/analysis_data.csv"), show_col_types = FALSE)
+```
+
+# Introduction
+
+The cultural and economic composition of Toronto's communities is as varied as the kinds and quantities of crimes that take place there. To successfully address safety problems and distribute resources, legislators, law enforcement, and local communities must have a thorough understanding of crime patterns. This paper focuses on analyzing two specific types of crimes within Toronto’s neighborhoods from 2014 to 2023: Homicides, which represent the most severe form of crime, and Auto Thefts, which are among the most frequently reported. These crimes were selected for their distinct characteristics—homicides for their societal impact and auto thefts for their high occurrence rate—both of which require targeted responses to improve community safety.
+
+Despite the availability of crime data, there is still a gap in the understanding of how these two types of crimes vary across different neighborhoods in Toronto. While general trends in crime are widely covered, little is known about the neighborhoods that are disproportionately impacted by persistent problems like auto theft or severe crimes like homicides. To create targeted crime prevention initiatives, it is imperative to recognize these patterns. In order to fill this gap, this paper explores the possible causes of these trends as well as the areas of highest concentration for auto theft and homicide.
+
+The findings of this paper indicate that specific neighborhoods are consistently associated with higher rates of both homicides and auto thefts, suggesting a need for tailored interventions in these areas. Our results show that certain communities experience repeated auto theft incidents, while homicides, though less frequent, have a profound impact on community safety perceptions. By identifying these hotspots, the paper offers policymakers and law enforcement practical information on how to allocate funds and create plans that may reduce the frequency and severity of the most dangerous crimes. In addition to clarifying Toronto's crime distribution, this paper adds to a larger body of information regarding urban safety and crime prevention.
+
+The structure of this paper is as follows: Section 2 (Data) discusses the datasets used in the analysis, including crime statistics from 2014 to 2023 and relevant neighborhood information. In Section 3 (Results), we present the findings for both homicides and auto thefts, supported by visualizations that illustrate the crime distributions across neighborhoods. Section 4 (Discussion) explores the implications of these findings, focusing on public policy and community safety efforts. Additionally, several limitations and future research approaches are discussed.
+
+# Data
+
+The data for this paper originates from Toronto Police Services' Open Data Portal, which provides detailed crime statistics across Toronto's neighborhoods from 2014 to 2023. This dataset records various types of offenses, including homicides and auto thefts, with neighborhood-specific details. Each record in the dataset includes variables such as the type of crime, the year of occurrence, and the geographic area in which the crime took place, using the City of Toronto's 158 neighborhood structure as a reference. The systematic collection and maintenance of this dataset ensure consistency across the time period, enabling reliable temporal and spatial analysis of crime trends.
+
+In this paper, we specifically focus on two key variables: Homicides and Auto Thefts, due to their societal impact and frequency, respectively. The dataset includes annual counts of these crimes for each neighborhood over the ten-year period. This decision was made to balance the depth of our analysis with the significance of these crimes: homicides are severe and represent critical safety concerns, while auto thefts are far more frequent but have a different set of implications for public safety. An essential part of our measurement approach was assessing the data's reliability and representativeness. The variable HOMICIDE_2014 through HOMICIDE_2023 represent the number of homicides reported in each neighborhood for each respective year, and similarly, the variables AUTOTHEFT_2014 through AUTOTHEFT_2023 reflect auto theft incidents. While there are other crime datasets available, including broader datasets that encompass a variety of other crime types (e.g., assaults, break-enters), we intentionally narrowed the scope to homicides and auto thefts to provide a more focused analysis.
+
+We cleaned and analyzed the dataset using the statistical programming language R [@citeR], Neighbourhood Crime Rates[@neighbourhoodcrimerates], the tidyverse [@tidyverse], janitor [@tidyverse], opendatatoronto [@opendatatoronto], ggplot2 [@ggplot] and knitr [@knitr]. Besides, the here [@here] was important in controlling file paths for a reproducible workflow. We constructed a table (@tbl-all) that successfully presents an overview of how different crimes have happened throughout each neighborhood in Toronto over ten years, allowing for easy comparisons of crime levels across the neighborhoods.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-all
+#| tbl-cap: Sample of Cleaned Data
+
+sample <- 
+  cleaned_data |>
+  mutate(Total_Assault = rowSums(across(ASSAULT_2014:ASSAULT_2023)),
+         Total_AutoTheft = rowSums(across(AUTOTHEFT_2014:AUTOTHEFT_2023)),
+         Total_BikeTheft = rowSums(across(BIKETHEFT_2014:BIKETHEFT_2023)),
+         Total_BreakEnter = rowSums(across(BREAKENTER_2014:BREAKENTER_2023)),
+         Total_Homicide = rowSums(across(HOMICIDE_2014:HOMICIDE_2023)),
+         Total_Robbery = rowSums(across(ROBBERY_2014:ROBBERY_2023)),
+         Total_Shooting = rowSums(across(SHOOTING_2014:SHOOTING_2023)),
+         Total_TheftFromMV = rowSums(across(THEFTFROMMV_2014:THEFTFROMMV_2023)),
+         Total_TheftOver = rowSums(across(THEFTOVER_2014:THEFTOVER_2023))) |>
+  select(HOOD_ID,AREA_NAME,Total_Assault,
+         Total_AutoTheft,Total_BikeTheft,Total_BreakEnter,
+         Total_Homicide,Total_Robbery,Total_Shooting,
+         Total_TheftFromMV,Total_TheftOver)
+
+kable(head(sample, 10), format = "latex", booktabs = TRUE) %>%
+  kable_styling(latex_options = c("scale_down"))
+```
+
+## Measurement
+
+In our paper on crime patterns in Toronto, particularly focusing on homicides and auto thefts, we carefully considered the complexities of measurement as we translated real-world events into a structured dataset. However, translating crime phenomena into discrete data points presents its own set of challenges. The dataset offers yearly crime totals, but it leaves out other detailed socioeconomic variables, such as reporting biases, which could have an impact on the frequency of crime reports. Additionally, missing values (NA) for certain years or neighborhoods could either reflect unreported incidents or gaps in data collection, necessitating imputation strategies such as filling missing data with zeros. While maintaining the continuity of the analysis, this inference may accidentally obscure actual changes in criminal events and introduce biases and uncertainty. To maintain the robustness of our analysis, we applied systematic cleaning processes to the dataset, focusing on aggregating and preparing key variables like total homicides and total auto thefts across neighborhoods.
+
+# Result
+
+```{r fig.width=10, fig.height=5}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-homicide
+#| tbl-cap: Top 10 Toronto Neighborhoods with the Highest Homicide Counts
+
+top_10_homicide <- sample |>
+  arrange(desc(Total_Homicide)) |>
+  slice_max(Total_Homicide, n = 10) |>
+  select(HOOD_ID,AREA_NAME,Total_Homicide)
+
+kable(top_10_homicide)
+
+```
+
+@tbl-homicide provides a clear overview of the Toronto neighborhoods most affected by homicides from 2014 to 2023. The table ranks neighborhoods based on their total homicide counts, with Moss Park topping the list with 27 homicides, followed by Mount Olive-Silverstone-Jamestown with 22 homicides. Moss Park and Mount Olive-Silverstone-Jamestown stand out as the most affected neighborhoods, with homicide rates considerably higher than others, pointing to potential crime hotspots in the city. Several neighborhoods like South Riverdale, Kensington-Chinatown, and York University Heights report slightly lower but still substantial homicide counts, indicating ongoing public safety concerns in these neighborhoods. The data highlights specific Toronto neighborhoods where homicides are more prevalent, which can guide law enforcement and policymakers in prioritizing crime prevention resources. 
+
+```{r fig.width=10, fig.height=5}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-AutoTheft
+#| tbl-cap: Top 10 Toronto Neighborhoods with the Highest AutoTheft Counts
+
+top_10_AutoTheft <- sample |>
+  arrange(desc(Total_AutoTheft)) |>
+  slice_max(Total_AutoTheft, n = 10) |>
+  select(HOOD_ID,AREA_NAME,Total_AutoTheft)
+
+kable(top_10_AutoTheft)
+
+```
+
+@tbl-AutoTheft presents a clear overview of the Toronto neighborhoods that experienced the most auto theft incidents from 2014 to 2023. 
+West Humber-Clairville ranks at the top with a significantly higher number of auto thefts than any other neighborhood. This stark difference indicates a severe issue with vehicle theft in this area. The remaining neighborhoods, including Bedford Park-Nortown, Yorkdale-Glen Park, and Milliken, report auto theft counts between 800 and 1,000, showing a steady, albeit lower, rate of vehicle thefts. The data highlights significant disparities in auto theft rates across Toronto neighborhoods. West Humber-Clairville stands out as a clear outlier, with auto thefts far exceeding any other area, pointing to a concentrated problem that warrants focused intervention. 
+
+```{r fig.width=8, fig.height=4}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-mossparkhomicide
+#| fig-cap: Total Homicides Per Year in Moss Park (2014-2023)
+
+moss_park_data <- cleaned_data |>
+  filter(AREA_NAME == "Moss Park") |>
+  select(HOMICIDE_2014:HOMICIDE_2023) |>
+  pivot_longer(cols = HOMICIDE_2014:HOMICIDE_2023, 
+               names_to = "Year", 
+               values_to = "Homicide_Count") |>
+  mutate(Year = as.numeric(sub("HOMICIDE_", "", Year)))
+
+ggplot(moss_park_data, aes(x = Year, y = Homicide_Count)) +
+  geom_line(color = "blue", size = 2, alpha = 0.7) +
+  geom_point(color = "red", size = 3, alpha = 0.7, shape = 15) +
+  labs(title = "Total Homicides Per Year in Moss Park (2014-2023)",
+       x = "Year",
+       y = "Total Homicides",
+       caption = "Source: Open Data Toronto") +
+  scale_x_continuous(breaks = seq(2014, 2023, by = 1)) +
+  scale_y_continuous(labels = scales::comma_format()) +
+  theme(plot.title = element_text(size = 15, face = "bold"),
+        axis.title = element_text(size = 10), 
+        axis.text = element_text(size = 10))
+
+```
+
+
+@fig-mossparkhomicide shows the annual homicide counts in the Moss Park neighborhood of Toronto. The blue line indicates the trends over time, with red squares marking specific yearly data points. Homicide counts remained low between 2014 and 2015, with a slight rise in 2016, peaking in 2018. The numbers gradually decreased after that, reaching their lowest in 2021, before a sharp increase occurred in 2023, when the homicide count reached its highest level of the decade.
+
+This data shows significant fluctuations in homicide rates over the past ten years, with particular spikes in 2018 and 2023. These patterns suggest that specific years experienced notable increases in violent crime, indicating the need for focused attention and intervention during these peak periods to better understand and address the factors contributing to the rise in homicides within the Moss Park neighborhood.
+
+
+```{r fig.width=10, fig.height=6}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-autothefts
+#| fig-cap: Top 10 Toronto Neighborhoods with the Highest Auto Thefts (2014-2023)
+
+ggplot(top_10_AutoTheft, aes(x = reorder(AREA_NAME, -Total_AutoTheft), y = Total_AutoTheft)) +
+  geom_bar(stat = "identity", fill = "orange", alpha = 0.8) +
+  geom_text(aes(label = Total_AutoTheft), vjust = -0.5, size = 4) +
+  theme_minimal() +
+  labs(title = "Top 10 Toronto Neighborhoods with the Highest Auto Thefts (2014-2023)",
+       x = "Neighborhood",
+       y = "Total Auto Thefts",
+       caption = "Source: Open Data Toronto") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10))
+```
+
+@fig-autothefts visualizes the total number of auto thefts across the ten most affected Toronto neighborhoods over the past decade. The neighborhoods are ranked from highest to lowest, with the x-axis displaying the neighborhood names and the y-axis representing the total number of incidents. Each bar is colored orange and labeled with the exact count of thefts, providing clear visibility of the data. The chart shows significant differences in auto theft occurrences across the neighborhoods. 
+
+# Discussion
+
+## Overview
+
+This paper examines crime patterns across Toronto neighborhoods over the span of 2014 to 2023, specifically focusing on two key types of crimes: homicides, representing the most severe crime, and auto thefts, one of the most frequently reported crimes. We have determined which neighborhoods are particularly vulnerable to these crimes by combining the yearly counts of these crimes and visualizing the results. This paper provides a clearer view of the places where law enforcement and public safety actions may be most needed by highlighting the most affected areas. A primary finding from this paper is the notable regional variation in the incidence of crimes in a big metropolis such as Toronto. The data shows that auto thefts and homicides affect certain neighborhoods disproportionately, suggesting that social, economic, and infrastructure issues may be behind these higher-than-average crime rates. West Humber-Clairville emerged as a hotspot for auto thefts, with significantly more incidents than any other neighborhood. This shows a critical need for tailored approaches to crime prevention in specific urban areas rather than relying on blanket city-wide policies. Another important finding is the fluctuation in violent crime over time, especially with regard to homicides in neighborhoods like Moss Park. While some years saw a reduction in homicides, the overall trend shows spikes at certain times, pointing to external factors such as economic downturns, policy changes, or shifting population demographics that might influence crime rates. According to the findings, these variations are not random and might be connected to more significant environmental or societal changes that need more investigation.
+
+## Limitations and Weaknesses
+
+One of the key weaknesses of this paper is the treatment of missing data. In some instances, we had to replace missing values (NAs) with zero, which might not accurately reflect the true crime occurrences in those cases. By imputing zero, there is a risk of introducing bias into the analysis, particularly in neighborhoods where data might be incomplete due to underreporting or gaps in record-keeping. This could lead to an underestimation of crime rates in certain areas, affecting the overall conclusions drawn from the paper.
+
+## Future Exploration
+
+While this paper sheds light on significant crime patterns in Toronto, it only focuses on two types of crime—homicides and auto thefts. In future studies, expanding the scope to include other crimes, such as assaults, break-ins, or drug-related offenses, could provide a more comprehensive view of crime dynamics in the city. By integrating more detailed crime types and broader contextual variables, future research could further illuminate the factors driving crime in specific neighborhoods and propose more refined, localized prevention strategies.
+
+# References
