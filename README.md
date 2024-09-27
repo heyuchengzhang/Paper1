@@ -1,8 +1,8 @@
-# Toronto-Neighbourhood-Crime
+# Mapping Crime Hotspots in Toronto: A Decade of Homicides and Auto Thefts Uncover High-Risk Neighborhoods
 
 ## Overview
 
-To be updated.
+This paper analyzes crime data from Toronto neighborhoods over ten years, focusing on homicides and auto thefts to identify areas most affected by these crimes.
 
 ## File Structure
 
@@ -16,4 +16,4 @@ The repo is structured as:
 
 ## Statement on LLM usage
 
-To be updated.
+No LLM usage.
